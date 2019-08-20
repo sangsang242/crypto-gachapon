@@ -2,17 +2,7 @@ module.exports = function (socket) {
 
   var addedUser = false;
   var numUsers = 0;
-
-  // when the client emits 'new message', this listens and executes
-  socket.on('new message', (data) => {
-    // we tell the client to execute 'new message'
-    socket.broadcast.emit('new message', {
-      username: socket.username,
-      message: data.message,
-      time: data.time
-    });
-  });
-
+  
   // when the client emits 'add user', this listens and executes
   socket.on('add user', (username) => {
     if (addedUser) return;
@@ -28,6 +18,16 @@ module.exports = function (socket) {
     socket.broadcast.emit('user joined', {
       username: socket.username,
       numUsers: numUsers
+    });
+  });
+
+  // when the client emits 'new message', this listens and executes
+  socket.on('new message', (data) => {
+    // we tell the client to execute 'new message'
+    socket.broadcast.emit('new message', {
+      username: socket.username,
+      message: data.message,
+      time: data.time
     });
   });
 
