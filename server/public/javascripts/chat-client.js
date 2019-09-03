@@ -3,6 +3,12 @@ $(function () {
   var FADE_TIME = 150; // ms
   var TYPING_TIMER_LENGTH = 400; // ms
 
+  var COLORS = [
+    '#e21400', '#91580f', '#f8a700', '#f78b00',
+    '#58dc00', '#287b00', '#a8f07a', '#4ae8c4',
+    '#3b88eb', '#3824aa', '#a700ff', '#d300e7'
+  ];
+
   // Initialize variables
   var $messages = $('.messages'); // Messages area
   var $inputMessage = $('.inputMessage'); // Input message input box
@@ -34,7 +40,7 @@ $(function () {
   const notifyUnread = () => {
     if (connected) {
       var unreadMsg = parseInt($('.chat-counter').text());
-      $('.chat-counter').text(unreadMsg+1);
+      $('.chat-counter').text(unreadMsg + 1);
       $('.chat-counter').fadeIn(300, 'swing');
     }
   }
@@ -45,6 +51,18 @@ $(function () {
     $('#live-chat').fadeOut(300);
   });
 
+  // Gets the color of a username through our hash function
+  const getUsernameColor = (username) => {
+    // Compute hash code
+    var hash = 7;
+    for (var i = 0; i < username.length; i++) {
+      hash = username.charCodeAt(i) + (hash << 5) - hash;
+    }
+    // Calculate color
+    var index = Math.abs(hash % COLORS.length);
+    return COLORS[index];
+  }
+
   /** logic */
 
   // Sets the client's address
@@ -52,6 +70,10 @@ $(function () {
     // If the address is valid
     // if (web3.utils.isAddress(address)) {
     if (username) {
+      if (username == 'Guest') {
+        username = username + Math.floor(Math.random() * 1000000)
+      }
+
       // Tell the server your address
       socket.emit('add user', username);
     }
@@ -119,7 +141,7 @@ $(function () {
     // Don't fade the message in if there is an 'X was typing'
     var $typingMessages = getTypingMessages(data);
     options = options || {};
-    if ($typingMessages.length !== 0) {
+    if (data.time > 0) {
       options.fade = false;
       $typingMessages.remove();
       var $time = $('<span class="chat-time"/>').text(formatTime(data.time));
@@ -130,7 +152,9 @@ $(function () {
     var $username = $('<h5/>')
       .text(data.username);
     if (data.username == username) {
-      $username.css('color', 'green');
+      $username.css('color', 'lime');
+    } else {
+      $username.css('color', getUsernameColor(data.username));
     }
 
     var $message = $('<p>')
@@ -234,8 +258,9 @@ $(function () {
   });
 
   const showTotalUser = (data) => {
-    var message = 'Users : ' + data.numUsers;
-    log(message);
+    $('.user-counter').text(data.numUsers);
+    // var message = 'Users : ' + data.numUsers;
+    // log(message);
   }
 
   // Socket events

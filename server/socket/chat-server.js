@@ -1,15 +1,13 @@
 module.exports = function (socket) {
 
   var addedUser = false;
-  var numUsers = 0;
   
   // when the client emits 'add user', this listens and executes
   socket.on('add user', (username) => {
     if (addedUser) return;
-
+    const numUsers = socket.client.conn.server.clientsCount;
     // we store the username in the socket session for this client
     socket.username = username;
-    ++numUsers;
     addedUser = true;
     socket.emit('login', {
       numUsers: numUsers
@@ -48,12 +46,10 @@ module.exports = function (socket) {
   // when the user disconnects.. perform this
   socket.on('disconnect', () => {
     if (addedUser) {
-      --numUsers;
-
       // echo globally that this client has left
       socket.broadcast.emit('user left', {
         username: socket.username,
-        numUsers: numUsers
+        numUsers: socket.client.conn.server.clientsCount
       });
     }
   });

@@ -466,6 +466,19 @@ a:hover, a:focus, a:active {
     width: 16px;
 }
 
+.user-counter {
+    border-radius: 50%;
+    color: #fff;
+    display: block;
+    float: right;
+    font-size: 10px;
+    height: 16px;
+    line-height: 16px;
+    margin: 3px 10px 0 0;
+    text-align: center;
+    width: 16px;
+}
+
 .chat {
     background: #34404b;
 }
