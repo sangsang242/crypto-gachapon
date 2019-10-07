@@ -3,7 +3,8 @@ const isset = require('isset');
 const Web3 = require('web3');
 const logger = require('./lib/logger')('sync');
 var mongoose = require('mongoose');
-var ContractData = require('./models/ContractData');
+var Option = require('./models/Option');
+var Table = require('./models/GameTable');
 var EventLog = require('./models/EventLog');
 
 /**
@@ -39,7 +40,7 @@ function nodeConnect(providerUrl) {
 
     web3.setProvider(provider);
     logger.info('New Web3 Provider Initiated');
-    
+
     return web3;
 }
 
@@ -54,14 +55,14 @@ function getAbi(web3Obj) {
 
 // Retrieve initial contract value
 async function getInitialData(MyContract) {
-    var contractData = await getOptionInfo(MyContract);
+    var optionData = await getOptionInfo(MyContract);
+    await syncOption(optionData);
 
-    var tables = {};
-    for (let index = 0; index < contractData.maxTable; index++) {
-        tables[index] = await getTableInfo(MyContract, index);
+    var tableData = {};
+    for (let index = 0; index < optionData.maxTable; index++) {
+        tableData[index] = await getTableInfo(MyContract, index);
     }
-    contractData.tables = tables;
-    await syncDatabase(contractData);
+    await syncTable(tableData);
 
     return Promise.resolve(MyContract);
 }
@@ -84,65 +85,107 @@ function getTableInfo(MyContract, tableIndex) {
     return MyContract.methods.tables(tableIndex).call();
 }
 
-async function syncDatabase(contractData) {
-    const currentData = await ContractData.findById(process.env.CONTRACT_ADDRESS);
-    logger.info('Current Contract Data : ' + JSON.stringify(currentData));
+async function syncOption(optionData) {
+    const currentData = await Option.findById(process.env.CONTRACT_ADDRESS);
+    logger.info('Current Option Data : ' + JSON.stringify(currentData));
 
     if (currentData) {
-        currentData.isPaused = contractData.isPaused;
-        currentData.maxTable = contractData.maxTable;
-        currentData.maxCase = contractData.maxCase;
-        currentData.feeRate = contractData.feeRate;
-        currentData.tables = contractData.tables;
+        currentData.isPaused = optionData.isPaused;
+        currentData.maxTable = optionData.maxTable;
+        currentData.maxCase = optionData.maxCase;
+        currentData.feeRate = optionData.feeRate;
         const savedData = await currentData.save();
-        logger.info('syncDatabase Update Result : ' + JSON.stringify(savedData));
-
+        logger.info('syncOption Update Result : ' + JSON.stringify(savedData));
     } else {
-        const newData = new ContractData({
+        const newData = new Option({
             _id: process.env.CONTRACT_ADDRESS,
-            isPaused: contractData.isPaused,
-            maxTable: contractData.maxTable,
-            maxCase: contractData.maxCase,
-            feeRate: contractData.feeRate,
-            tables: contractData.tables
+            isPaused: optionData.isPaused,
+            maxTable: optionData.maxTable,
+            maxCase: optionData.maxCase,
+            feeRate: optionData.feeRate,
         });
-
         const savedData = await newData.save();
-        logger.info('syncDatabase Insert Result : ' + JSON.stringify(savedData));
+        logger.info('syncOption Insert Result : ' + JSON.stringify(savedData));
     }
+}
 
+async function syncTable(tableData) {
+    for (var tableIndex in tableData) {
+        const currentData = await Table.findById(tableIndex);
+        logger.info('Current Table Data : ' + JSON.stringify(currentData));
+
+        if (currentData) {
+            currentData.maker = tableData[tableIndex].maker;
+            currentData.deposit = tableData[tableIndex].deposit;
+            currentData.hashedNum = tableData[tableIndex].hashedNum;
+            currentData.allowedTime = tableData[tableIndex].allowedTime;
+            currentData.taker = tableData[tableIndex].taker;
+            currentData.payment = tableData[tableIndex].payment;
+            currentData.guessedNum = tableData[tableIndex].guessedNum;
+            currentData.takingTime = tableData[tableIndex].takingTime;
+            const savedData = await currentData.save();
+            logger.info('syncOption Update Result : ' + JSON.stringify(savedData));
+        } else {
+            var gameTable = tableData[tableIndex];
+            gameTable._id = tableIndex;
+            const newData = new Table(gameTable);
+            const savedData = await newData.save();
+            logger.info('syncOption Insert Result : ' + JSON.stringify(savedData));
+        }
+    }
 }
 
 function subscribe(MyContract) {
-    subscribeEvent(MyContract, 'ContractChanged', contractChanged); // todo event name changed
-    // subscribeEvent(MyContract, 'TableChanged'); // todo event name changed
+    subscribeEvent(MyContract, 'OptionChanged', optionChanged);
+    subscribeEvent(MyContract, 'TableChanged', tableChanged);
 }
 
-async function contractChanged(MyContract) {
-    var contractData = await getOptionInfo(MyContract);
+/** Event Handler */
+async function optionChanged(MyContract) {
+    var optionData = await getOptionInfo(MyContract);
 
-    const currentData = await ContractData.findById(process.env.CONTRACT_ADDRESS);
-    currentData.isPaused = contractData.isPaused;
-    currentData.maxTable = contractData.maxTable;
-    currentData.maxCase = contractData.maxCase;
-    currentData.feeRate = contractData.feeRate;
+    const currentData = await Option.findById(process.env.CONTRACT_ADDRESS);
+    currentData.isPaused = optionData.isPaused;
+    currentData.maxTable = optionData.maxTable;
+    currentData.maxCase = optionData.maxCase;
+    currentData.feeRate = optionData.feeRate;
+    const savedData = await currentData.save();
+    logger.info('Watched Event Update Result : ' + JSON.stringify(savedData));
+}
+
+async function tableChanged(MyContract, event) {
+    const tableIndex = event.returnValues.tableIndex;
+    const tableInfo = await getTableInfo(MyContract, tableIndex);
+    logger.info('Watched Table Info : ' + JSON.stringify(tableInfo));
+
+    const currentData = await Table.findById(tableIndex);
+
+    currentData.maker = tableInfo.maker;
+    currentData.deposit = tableInfo.deposit;
+    currentData.hashedNum = tableInfo.hashedNum;
+    currentData.allowedTime = tableInfo.allowedTime;
+    currentData.taker = tableInfo.taker;
+    currentData.payment = tableInfo.payment;
+    currentData.guessedNum = tableInfo.guessedNum;
+    currentData.takingTime = tableInfo.takingTime;
     const savedData = await currentData.save();
     logger.info('Watched Event Update Result : ' + JSON.stringify(savedData));
 }
 
 async function logEvent(eventName, event) {
     logger.info(eventName + ' Watched : ' + JSON.stringify(event));
-    
+
     const logData = new EventLog({
         _id: event.transactionHash,
         blockNumber: event.blockNumber,
         event: event.event,
-        raw: event.raw
+        raw: event.raw,
+        returnValues: event.returnValues
     });
 
     const savedData = await logData.save();
     logger.info('EventLog Insert Result : ' + JSON.stringify(savedData));
-} 
+}
 
 function subscribeEvent(MyContract, eventName, eventFunction) {
     logger.info(eventName + ' Event Subscription Start...');
@@ -150,8 +193,9 @@ function subscribeEvent(MyContract, eventName, eventFunction) {
     MyContract.events[eventName]({
         filter: { address: process.env.CONTRACT_ADDRESS },
     }, function (error, event) {
+        logger.info('----------------------------------------');
         logEvent(eventName, event)
-        eventFunction(MyContract, eventName, event)
+        eventFunction(MyContract, event)
     })
         .on('changed', function (event) {
             logger.info(event);
@@ -161,6 +205,7 @@ function subscribeEvent(MyContract, eventName, eventFunction) {
         })
 }
 
+logger.info('========================================');
 logger.info('Fetch Contract Start...');
 
 connect('wss://' + process.env.INFURA_ENDPOINT)

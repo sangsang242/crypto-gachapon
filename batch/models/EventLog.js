@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const moment = require('moment-timezone');
 
 const eventLog = mongoose.Schema({
     // transactionHash
@@ -7,6 +8,11 @@ const eventLog = mongoose.Schema({
         require: true,
         lowercase: true, 
         trim: true
+    },
+    time: {
+        type: Date,
+        require: true,
+        default: moment.tz(Date.now(), "Asia/Seoul")
     },
     blockNumber: {
         type: Number,
@@ -18,9 +24,12 @@ const eventLog = mongoose.Schema({
     },
     raw: {
         type: Array,
-        default: []
+        default: {}
     },
-
+    returnValues: {
+        type: Array,
+        default: {}
+    },
 })
 
 module.exports = mongoose.model('EventLog', eventLog)

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const contractData = mongoose.Schema({
+const option = mongoose.Schema({
     // contract address
     _id: {
         type: String,
@@ -24,11 +24,6 @@ const contractData = mongoose.Schema({
         type: Number,
         require: true,
     },
-    tables: {
-        type: Array,
-        default: []
-    },
-
 })
 
-module.exports = mongoose.model('ContractData', contractData)
+module.exports = mongoose.model('Option', option)
