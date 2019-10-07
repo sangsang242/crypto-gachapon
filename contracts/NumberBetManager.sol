@@ -3,7 +3,7 @@
 NumberBetManager
 v 1.0.0
 
-http://www.crytogachapon.com
+http://www.get242.com/numberbet
 
 Copyright © 2019 S.H. LEE <windmill131@naver.com>
 This work is free. You can redistribute it and/or modify it under the
