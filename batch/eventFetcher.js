@@ -1,11 +1,12 @@
-require('dotenv').config();
+require('dotenv').config({ path: '../.env' })
+
 const isset = require('isset');
 const Web3 = require('web3');
-const logger = require('./lib/logger')('sync');
-var mongoose = require('mongoose');
-var Option = require('./models/Option');
-var Table = require('./models/GameTable');
-var EventLog = require('./models/EventLog');
+const logger = require('../core/lib/logger')('sync');
+const mongoose = require('mongoose');
+const Option = require('../core/models/Option');
+const Table = require('../core/models/GameTable');
+const EventLog = require('../core/models/EventLog');
 
 /**
  * Refreshes provider instance and attaches even handlers to it
@@ -47,7 +48,7 @@ function nodeConnect(providerUrl) {
 function getAbi(web3Obj) {
     const contractName = process.env.CONTRACT_NAME;
 
-    const compiledAbi = require('./lib/solCompiler')(contractName);
+    const compiledAbi = require('../core/lib/solCompiler')(contractName);
     const MyContract = new web3Obj.eth.Contract(compiledAbi, process.env.CONTRACT_ADDRESS);
 
     return Promise.resolve(MyContract);

@@ -3,7 +3,7 @@ const fs = require('fs');
 const solc = require('solc');
 
 module.exports = function (contractName) {
-    const CONTRACT_PATH = __dirname + '../../../contracts';
+    const CONTRACT_PATH = __dirname + '../../../contract';
     const CONTRACT_NAME = contractName + '.sol';
 
     // https://levelup.gitconnected.com/compiling-ethereum-smart-contracts-locally-0-5-2-0-5-x-ebfea0aed3a9

@@ -1,8 +1,8 @@
-require('dotenv').config();
+require('dotenv').config({ path: __dirname + '../' })
 
 const isset = require('isset');
 const Web3 = require('web3');
-const logger = require('./lib/logger')('sync');
+const logger = require('../core/lib/logger')('sync');
 
 /**
  * Refreshes provider instance and attaches even handlers to it
@@ -25,7 +25,7 @@ function connect(providerUrl) {
 function getAbi(web3Obj) {
     const contractName = process.env.CONTRACT_NAME;
 
-    const compiledAbi = require('./lib/solCompiler')(contractName);
+    const compiledAbi = require('../core/lib/solCompiler')(contractName);
     const MyContract = new web3Obj.eth.Contract(compiledAbi, process.env.CONTRACT_ADDRESS);
 
     return Promise.resolve(MyContract);
