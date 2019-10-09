@@ -3,12 +3,15 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var favicon = require('serve-favicon');
 
 var indexRouter = require('./routes/index');
 var api = require('./routes/api');
 var numBerbet = require('./routes/numberbet');
 
 var app = express();
+
+app.use(favicon(__dirname + '/public/images/favicon.ico'));
 
 // socket server 
 app.io = require('./socket/socket');

@@ -269,7 +269,7 @@ $(function () {
   socket.on('login', (data) => {
     connected = true;
     // Display the welcome message
-    var message = "Messages will NOT be stored in server";
+    var message = "Messages will Not be stored in the server";
     log(message, { prepend: true });
     showTotalUser(data);
   });
