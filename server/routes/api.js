@@ -1,9 +1,23 @@
 var express = require('express');
 var router = express.Router();
 var User = require('../models/User');
+var Abi = require('../../core/models/Abi');
 var ethAddress = require('ethereum-address');
 var ethUtil = require('ethereumjs-util');
 var jwt = require('jsonwebtoken');
+
+router.get('/abi/:contractAddr', async (req, res) => {
+  try {
+    const contractAddr = req.params.contractAddr.toLowerCase();
+    if (!ethAddress.isAddress(contractAddr)) {
+      throw new Error('Contract address is not valid');
+    }
+    const abi = await Abi.findById(contractAddr);
+    res.json(abi);
+  } catch (error) {
+    res.json({ message: error.toString() });
+  }
+});
 
 router.get('/users/:pubAddress', async (req, res) => {
   try {

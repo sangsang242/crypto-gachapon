@@ -2,17 +2,19 @@ var express = require('express');
 var router = express.Router();
 const Option = require('../../core/models/Option');
 const Table = require('../../core/models/GameTable');
+const Abi = require('../../core/models/Abi');
 
 /* GET users listing. */
 router.get('/', async function(req, res, next) {
-  const gameOptions = await Option.findById(process.env.CONTRACT_ADDRESS);
-  const gameTables = await Table.find({});
+  const options = await Option.findById(process.env.CONTRACT_ADDRESS);
+  const abi = await Abi.findById(process.env.CONTRACT_ADDRESS);
+  const tables = await Table.find({});
 
-  console.log(gameOptions)
-  console.log(gameTables)
-
-
-  res.render('numberbet');
+  res.render('numberbet', {
+    options: options,
+    abi: JSON.stringify(abi.toJSON().abi),
+    tables: tables,
+  });
 });
 
 module.exports = router;

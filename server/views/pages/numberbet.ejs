@@ -5,157 +5,145 @@
 
 <body id="page-top">
 
-  <% include ../partials/navigation %>
+    <% include ../partials/navigation %>
 
-  <!-- Services -->
-  <section class="content-section bg-secondary text-white" id="services">
-    <div class="container">
-      <div class="content">
-        <h2 class="text-secondary mb-5">Hit Number</h2>
-      </div>
-      <div class="content-section-heading">
-        <h3 class="mb-3">Tables</h3>
-      </div>
-      <div class="row text-center">
+    <!-- Services -->
+    <section class="content-section img-bg text-white" id="services">
+        <div class="container">
+            <div class="content">
+                <h2 class="text-secondary mb-5">Number Bet (Ropsten)</h2>
+            </div>
+            <div class="content-section-heading">
+                <h3 class="mb-3"><a id="contractLink" href="https://ropsten.etherscan.io/address/<%= options._id %>"
+                        target="_blank"><%= options._id %></a></h3>
+            </div>
+            <div class="row text-center">
 
-        <div class="col-lg-3 col-md-6 mb-5 mb-lg-5">
-          <span class="sits-icon rounded-circle mx-auto mb-1">
-            SIT
-          </span>
-          <span class="service-icon mx-auto mb-1">
-            MAKE A BET
-          </span>
-          <span class="sits-icon rounded-circle mx-auto mb-2">
-            SIT
-          </span>
-          <h5>
-            <strong>Responsive</strong>
-          </h5>
+                <div class="container">
+                    <div class="row">
+                        <div class="mh-project-gallery col-sm-12">
+                            <div class="row">
+                                <% for(let i = 0; i< tables.length; i++){%>
+                                <!-- <%= tables[i] %> -->
+                                <div class="grid-item col-md-4 col-sm-6 col-xs-12">
+                                    <figure>
+                                        <span class="service-icon mx-auto" id="tableStatus">
+                                            Empty Table
+                                        </span>
+                                        <figcaption class="fig-caption">
+                                            <div class="numberCircle">
+                                                <%= tables[i]._id %>
+                                            </div>
+                                            <h5 class="title">Make a Bet</h5>
+                                            <span class="sub-title"></span>
+                                            <a data-fancybox data-src="#mh"
+                                                onclick="tableSetting(<%= tables[i]._id %>)"></a>
+                                        </figcaption>
+                                    </figure>
+                                </div>
+                                <%}%>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+        <div class="mh-portfolio-modal" id="mh">
+            <div class="container">
+                <div class="row mh-portfolio-modal-inner">
+                    <div class="col-md-10">
 
-        <div class="col-lg-3 col-md-6 mb-5 mb-lg-5">
-          <span class="sits-icon rounded-circle mx-auto mb-1">
-            SIT
-          </span>
-          <span class="service-icon mx-auto mb-1">
-            MAKE A BET
-          </span>
-          <span class="sits-icon rounded-circle mx-auto mb-2">
-            SIT
-          </span>
-          <h5>
-            <strong>Responsive</strong>
-          </h5>
+                        <div class="price-box">
+                            <div class="form-horizontal form-pricing" role="form">
+                        
+                                <h2>Table At <span id="modalTableIndex"></span></h2>
+                                <h5>Number to Hide</h5>
+                                <div class="betOptionBox">
+                                    <div class="input-group" id="radioBtn">
+                                    <% for(let i = 0; i< options.maxCase; i++){%>
+                                        <a class="btn btn-info notActive" data-toggle="numberButton" data-title="<%= i%>"><%= i%></a>
+                                    <%}%>
+                                    <input type="hidden" id="numberButton">
+                                    </div>
+                                </div>
+                                <h5>Payout on Win</h5>
+                                <span id="amount-label"></span> ETH
+                                <div class="price-slider">
+                                        <span>Minimum 0.01 ETH is required</span>
+                                    </div>
+                                <div class="price-slider">
+                                    <div class="col-sm-12">
+                                        <div id="slider"></div>
+                                    </div>
+                                </div>
+                            
+                                <div class="col-sm-6">
+                                    <input type="hidden" id="amount" class="form-control">
+                                    Deposit: <span id="deposit-label"></span> ETH
+                                </div>
+                        
+                                <h5>Revealing Duration</h5>
+                                <div class=" custom-control custom-radio custom-control-inline">
+                                    <input type="radio" id="durationRadio1" name="durationRadio" value="900" checked="checked" class="custom-control-input">
+                                    <label class="custom-control-label" for="durationRadio1">15 min</label>
+                                </div>
+                                <div class=" custom-control custom-radio custom-control-inline">
+                                    <input type="radio" id="durationRadio2" name="durationRadio" value="1800" class="custom-control-input">
+                                    <label class="custom-control-label" for="durationRadio2">30 min</label>
+                                </div>
+                                <div class=" custom-control custom-radio custom-control-inline">
+                                    <input type="radio" id="durationRadio3" name="durationRadio" value="3600" class="custom-control-input">
+                                    <label class="custom-control-label" for="durationRadio3">1 hr</label>
+                                </div>
+
+                                <h5>Word for Salted Hash</h5>
+                                <div class="betOptionBox">
+                                    <input type="text" class="form-control" id="saltWord" placeholder="ex) apple" required>
+                                </div>
+
+                                <div class="col-sm-12 submit-button">
+                                    <button class="btn btn-primary btn-lg btn-block">Make a Bet </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-3 metamask-image">
+                            <a href="https://metamask.io/" target="_blank">
+                                <img src="/images/metamask-logo.jpg">
+                            </a>
+                        </div>
+                        
+                        <!-- <h2>Maker's Txid</h2>
+                        <h2>Payout on Win</h2>
+                        <h2>Prediction</h2>
+                        <h2>Place BET</h2>
+
+                        <h2>Maker's Txid</h2>
+                        <h2>Taker's Txid</h2>
+                        <h2>Payout on Win</h2>
+                        <h2>Taker's Prediction</h2>
+                        <h2>Countdown time for Maker to reveal the Number</h2>
+                        <h2>Reveal Number</h2> <h2>Acquire Unearnd Bet</h2> -->
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div class="col-lg-3 col-md-6 mb-5 mb-lg-5">
-          <span class="sits-icon rounded-circle mx-auto mb-1">
-            SIT
-          </span>
-          <span class="service-icon mx-auto mb-1">
-            MAKE A BET
-          </span>
-          <span class="sits-icon rounded-circle mx-auto mb-2">
-            SIT
-          </span>
-          <h5>
-            <strong>Responsive</strong>
-          </h5>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-5 mb-lg-5">
-          <span class="sits-icon rounded-circle mx-auto mb-1">
-            SIT
-          </span>
-          <span class="service-icon mx-auto mb-1">
-            MAKE A BET
-          </span>
-          <span class="sits-icon rounded-circle mx-auto mb-2">
-            SIT
-          </span>
-          <h5>
-            <strong>Responsive</strong>
-          </h5>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-5 mb-lg-5">
-          <span class="sits-icon rounded-circle mx-auto mb-1">
-            SIT
-          </span>
-          <span class="service-icon mx-auto mb-1">
-            MAKE A BET
-          </span>
-          <span class="sits-icon rounded-circle mx-auto mb-2">
-            SIT
-          </span>
-          <h5>
-            <strong>Responsive</strong>
-          </h5>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-5 mb-lg-5">
-          <span class="sits-icon rounded-circle mx-auto mb-1">
-            SIT
-          </span>
-          <span class="service-icon mx-auto mb-1">
-            MAKE A BET
-          </span>
-          <span class="sits-icon rounded-circle mx-auto mb-2">
-            SIT
-          </span>
-          <h5>
-            <strong>Responsive</strong>
-          </h5>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-5 mb-lg-5">
-          <span class="sits-icon rounded-circle mx-auto mb-1">
-            SIT
-          </span>
-          <span class="service-icon mx-auto mb-1">
-            MAKE A BET
-          </span>
-          <span class="sits-icon rounded-circle mx-auto mb-2">
-            SIT
-          </span>
-          <h5>
-            <strong>Responsive</strong>
-          </h5>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-5 mb-lg-5">
-          <span class="sits-icon rounded-circle mx-auto mb-1">
-            SIT
-          </span>
-          <span class="service-icon mx-auto mb-1">
-            MAKE A BET
-          </span>
-          <span class="sits-icon rounded-circle mx-auto mb-2">
-            SIT
-          </span>
-          <h5>
-            <strong>Responsive</strong>
-          </h5>
-        </div>
-        
-        <span class='address'>Guest</span>
-        
-        
-        <button class='checker'>
-          WEB3 Checker
-        </button>
-        <script src="/javascripts/metamask-auth.js"></script>
-
       </div>
     </div>
+
+    <input type="hidden" id="userAddr" value="Guest">
+    <input type="hidden" id="contractAddr" value="<%= options._id %>">
+    <input type="hidden" id="contractAbi" value="<%= abi %>">
+    <input type="hidden" id="maxCase" value="<%= options.maxCase %>">
 
 
     <% include ../partials/chat %>
 
-  </section>
+    </section>
 
-  <% include ../partials/footer %>
-
+    <% include ../partials/footer %>
+    <script src="/javascripts/numberbet.js"></script>
+    <script src="/javascripts/metamask.js"></script>
+    <script src="/javascripts/crypto-js.min.js"></script>
 </body>
 
 </html>

@@ -14,7 +14,7 @@ $(function () {
   var $inputMessage = $('.inputMessage'); // Input message input box
   var $chatPage = $('.chat.page'); // The chatroom page
 
-  var username = $(".address").text().trim();
+  var username = $("#userAddr").val();
 
   // Prompt for setting
   var connected = false;
