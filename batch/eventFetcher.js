@@ -2,11 +2,21 @@ require('dotenv').config({ path: '../.env' })
 
 const isset = require('isset');
 const Web3 = require('web3');
-const logger = require('../core/lib/logger')('sync');
+const logger = require('../core/lib/logger')(getDate() + '-sync');
 const mongoose = require('mongoose');
+const Abi = require('../core/models/Abi');
 const Option = require('../core/models/Option');
 const Table = require('../core/models/GameTable');
 const EventLog = require('../core/models/EventLog');
+
+function getDate() {
+    var dateObj = new Date();
+    var year = dateObj.getUTCFullYear();
+    var month = dateObj.getUTCMonth() + 1;
+    var day = dateObj.getUTCDate();
+
+    return year + '' + month + '' + day;
+}
 
 /**
  * Refreshes provider instance and attaches even handlers to it
@@ -49,9 +59,29 @@ function getAbi(web3Obj) {
     const contractName = process.env.CONTRACT_NAME;
 
     const compiledAbi = require('../core/lib/solCompiler')(contractName);
+    updateAbi(compiledAbi);
+
     const MyContract = new web3Obj.eth.Contract(compiledAbi, process.env.CONTRACT_ADDRESS);
 
     return Promise.resolve(MyContract);
+}
+
+async function updateAbi(compiledAbi) {
+    const currentData = await Abi.findById(process.env.CONTRACT_ADDRESS);
+    logger.info('Current ABI Data : ' + JSON.stringify(currentData));
+
+    if (currentData) {
+        currentData.abi = compiledAbi;
+        const savedData = await currentData.save();
+        logger.info('ABI Update Result : ' + JSON.stringify(savedData));
+    } else {
+        const newData = new Abi({
+            _id: process.env.CONTRACT_ADDRESS,
+            abi: compiledAbi
+        });
+        const savedData = await newData.save();
+        logger.info('ABI Insert Result : ' + JSON.stringify(savedData));
+    }
 }
 
 // Retrieve initial contract value
