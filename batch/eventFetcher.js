@@ -9,6 +9,9 @@ const Option = require('../core/models/Option');
 const Table = require('../core/models/GameTable');
 const EventLog = require('../core/models/EventLog');
 
+const socket = require('socket.io-client')(
+    process.env.SOCKET_HOST + process.env.SOCKET_PORT + '/numberbet');
+
 function getDate() {
     var dateObj = new Date();
     var year = dateObj.getUTCFullYear();
@@ -146,6 +149,9 @@ async function syncTable(tableData) {
         logger.info('Current Table Data : ' + JSON.stringify(currentData));
 
         if (currentData) {
+            currentData.status = getTableStatus(tableData[tableIndex]);
+            currentData.recentTx = '';
+            currentData.recentTime = null;
             currentData.maker = tableData[tableIndex].maker;
             currentData.deposit = tableData[tableIndex].deposit;
             currentData.hashedNum = tableData[tableIndex].hashedNum;
@@ -159,6 +165,7 @@ async function syncTable(tableData) {
         } else {
             var gameTable = tableData[tableIndex];
             gameTable._id = tableIndex;
+            gameTable.status = getTableStatus(tableData[tableIndex]);
             const newData = new Table(gameTable);
             const savedData = await newData.save();
             logger.info('syncOption Insert Result : ' + JSON.stringify(savedData));
@@ -191,6 +198,12 @@ async function tableChanged(MyContract, event) {
 
     const currentData = await Table.findById(tableIndex);
 
+    currentData.status = getTableStatus(tableInfo);
+    currentData.recentTx = event.transactionHash;
+    if (currentData.recentTx != event.transactionHash) {
+        logger.notice('Transaction Pending Missed : ' + JSON.stringify(event.transactionHash));
+        currentData.recentTime = new Date().getTime();
+    }
     currentData.maker = tableInfo.maker;
     currentData.deposit = tableInfo.deposit;
     currentData.hashedNum = tableInfo.hashedNum;
@@ -234,6 +247,20 @@ function subscribeEvent(MyContract, eventName, eventFunction) {
         .on('error', function (error) {
             logger.info(error);
         })
+}
+
+function getTableStatus(table) {
+    var tableStatus = '';
+
+    if (!table || table.deposit == 0) {
+        tableStatus = 'empty';
+    } else if (table.payment == 0) {
+        tableStatus = 'half';
+    } else {
+        tableStatus = 'full';
+    }
+
+    return tableStatus;
 }
 
 logger.info('========================================');

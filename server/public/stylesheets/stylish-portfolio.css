@@ -199,12 +199,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .service-icon {
-  background-color: #fff;
+  background-color: rgba(23, 21, 27, 0.747);
   color: #1D809F;
-  height: 7rem;
-  width: 7rem;
+  height: 8.5rem;
+  width: 8.5rem;
   display: block;
-  line-height: 7.5rem;
+  line-height: 10rem;
   -webkit-box-shadow: 0 3px 3px 0 rgba(0, 0, 0, 0.1);
   box-shadow: 0 3px 3px 0 rgba(0, 0, 0, 0.1);
 }

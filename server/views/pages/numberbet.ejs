@@ -2,6 +2,7 @@
 <html lang="en">
 
 <% include ../partials/head %>
+<% include ../partials/functions %>
 
 <body id="page-top">
 
@@ -24,17 +25,34 @@
                         <div class="mh-project-gallery col-sm-12">
                             <div class="row">
                                 <% for(let i = 0; i< tables.length; i++){%>
-                                <!-- <%= tables[i] %> -->
                                 <div class="grid-item col-md-4 col-sm-6 col-xs-12">
                                     <figure>
-                                        <span class="service-icon mx-auto" id="tableStatus">
-                                            Empty Table
+                                        <span class="service-icon mx-auto">
+                                            <% if (tables[i].status == 'full') {%>
+                                                Table is Full
+                                            <%} else if(tables[i].status == 'half') {%>
+                                                Bet on <%= toEth(tables[i].deposit / options.maxCase) %> ETH
+                                            <%} else if(tables[i].status == 'pending') {%>
+                                                Tx Pending
+                                                <span><%= tables[i].pendingTx %></span>
+                                            <%} else {%>
+                                                Empty Table
+                                            <%}%>
                                         </span>
                                         <figcaption class="fig-caption">
                                             <div class="numberCircle">
                                                 <%= tables[i]._id %>
                                             </div>
-                                            <h5 class="title">Make a Bet</h5>
+                                            <% if (tables[i].status == 'full') {%>
+                                                <h5 class="title">Finalize Bet</h5>
+                                            <%} else if(tables[i].status == 'half') {%>
+                                                <h5 class="title">Join a Bet</h5>
+                                            <%} else if(tables[i].status == 'pending') {%>
+                                                <h5 class="title">Tx Pending</h5>
+                                                <span><%= tables[i].pendingTx %></span>
+                                            <%} else {%>
+                                                <h5 class="title">Make a Bet</h5>
+                                            <%}%>
                                             <span class="sub-title"></span>
                                             <a data-fancybox data-src="#mh"
                                                 onclick="tableSetting(<%= tables[i]._id %>)"></a>
@@ -61,16 +79,20 @@
                                 <div class="betOptionBox">
                                     <div class="input-group" id="radioBtn">
                                     <% for(let i = 0; i< options.maxCase; i++){%>
-                                        <a class="btn btn-info notActive" data-toggle="numberButton" data-title="<%= i%>"><%= i%></a>
+                                        <% if (i == 0) {%>
+                                            <a class="btn btn-info" data-toggle="numberButton" data-title="<%= i%>"><%= i%></a>
+                                        <%} else {%>
+                                            <a class="btn btn-info notActive" data-toggle="numberButton" data-title="<%= i%>"><%= i%></a>
+                                        <%}%>
                                     <%}%>
-                                    <input type="hidden" id="numberButton">
+                                    <input type="hidden" id="numberButton" value="0">
                                     </div>
                                 </div>
                                 <h5>Payout on Win</h5>
                                 <span id="amount-label"></span> ETH
                                 <div class="price-slider">
-                                        <span>Minimum 0.01 ETH is required</span>
-                                    </div>
+                                    <span>Minimum 0.01 ETH is required</span>
+                                </div>
                                 <div class="price-slider">
                                     <div class="col-sm-12">
                                         <div id="slider"></div>
@@ -99,6 +121,7 @@
                                 <h5>Word for Salted Hash</h5>
                                 <div class="betOptionBox">
                                     <input type="text" class="form-control" id="saltWord" placeholder="ex) apple" required>
+                                    <span id="hashedNum"></span>
                                 </div>
 
                                 <div class="col-sm-12 submit-button">
@@ -106,6 +129,9 @@
                                 </div>
                             </div>
                         </div>
+
+
+                        
                         <div class="col-sm-3 metamask-image">
                             <a href="https://metamask.io/" target="_blank">
                                 <img src="/images/metamask-logo.jpg">
@@ -142,7 +168,7 @@
 
     <% include ../partials/footer %>
     <script src="/javascripts/numberbet.js"></script>
-    <script src="/javascripts/metamask.js"></script>
+    <script src="/javascripts/numberbet-client.js"></script>
     <script src="/javascripts/crypto-js.min.js"></script>
 </body>
 

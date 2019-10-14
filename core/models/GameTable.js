@@ -8,6 +8,19 @@ const gameTable = mongoose.Schema({
         lowercase: true, 
         trim: true
     },
+    // empty -> half -> full -> empty
+    status: {
+        type: String,
+        default: 'empty',
+    },
+    recentTx: {
+        type: String,
+        default: '',
+    },
+    recentTime: {
+        type: Number,
+        default: null,
+    },
     maker: {
         type: String,
         require: true,

@@ -15,7 +15,7 @@ as published by Sam Hocevar. See the COPYING file for more details.
 pragma solidity ^0.5.6;
 
 /// @title Basic operational actions
-/// @notice You can use this contract for only the most basic simulation
+/// @notice You can use this contract for the basic simulation
 /// @dev All function calls are currently implemented without side effects
 contract OperationalControl {
 
