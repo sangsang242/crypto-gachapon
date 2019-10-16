@@ -2,9 +2,20 @@ var express = require('express');
 var router = express.Router();
 var User = require('../models/User');
 var Abi = require('../../core/models/Abi');
+var Table = require('../../core/models/GameTable');
 var ethAddress = require('ethereum-address');
 var ethUtil = require('ethereumjs-util');
 var jwt = require('jsonwebtoken');
+
+router.get('/gameTables/:tableIndex', async (req, res) => {
+  try {
+    const tableIndex = req.params.tableIndex;
+    const tableData = await Table.findById(tableIndex);
+    res.json(tableData);
+  } catch (error) {
+    res.json({ message: error.toString() });
+  }
+});
 
 router.get('/abi/:contractAddr', async (req, res) => {
   try {

@@ -15,7 +15,7 @@
                 <h2 class="text-secondary mb-5">Number Bet (Ropsten)</h2>
             </div>
             <div class="content-section-heading">
-                <h3 class="mb-3"><a id="contractLink" href="https://ropsten.etherscan.io/address/<%= options._id %>"
+                <h3 class="mb-3">Contract Address &ensp;<a id="contractLink" href="https://ropsten.etherscan.io/address/<%= options._id %>"
                         target="_blank"><%= options._id %></a></h3>
             </div>
             <div class="row text-center">
@@ -27,37 +27,40 @@
                                 <% for(let i = 0; i< tables.length; i++){%>
                                 <div class="grid-item col-md-4 col-sm-6 col-xs-12">
                                     <figure>
-                                        <span class="service-icon mx-auto">
-                                            <% if (tables[i].status == 'full') {%>
-                                                Table is Full
-                                            <%} else if(tables[i].status == 'half') {%>
-                                                Bet on <%= toEth(tables[i].deposit / options.maxCase) %> ETH
-                                            <%} else if(tables[i].status == 'pending') {%>
-                                                Tx Pending
-                                                <span><%= tables[i].pendingTx %></span>
+                                        <span class="service-icon mx-auto table-front-<%= tables[i]._id %>">
+                                            <% if (isPending(tables[i].pendingTime, tables[i].recentTime)) {%>
+                                                Pending
                                             <%} else {%>
-                                                Empty Table
+                                                <% if (tables[i].status == 'full') {%>
+                                                    Full Table
+                                                <%} else if(tables[i].status == 'half') {%>
+                                                    Bet on <%= toEth(tables[i].deposit / options.maxCase) %> ETH
+                                                <%} else {%>
+                                                    Empty Table
+                                                <%}%>
                                             <%}%>
                                         </span>
                                         <figcaption class="fig-caption">
                                             <div class="numberCircle">
                                                 <%= tables[i]._id %>
                                             </div>
-                                            <% if (tables[i].status == 'full') {%>
-                                                <h5 class="title">Finalize Bet</h5>
-                                            <%} else if(tables[i].status == 'half') {%>
-                                                <h5 class="title">Join a Bet</h5>
-                                            <%} else if(tables[i].status == 'pending') {%>
-                                                <h5 class="title">Tx Pending</h5>
-                                                <span><%= tables[i].pendingTx %></span>
+                                            <% if (isPending(tables[i].pendingTime, tables[i].recentTime)) {%>
+                                                <h5 class="title table-back-<%= tables[i]._id %>">Check Txid</h5>
                                             <%} else {%>
-                                                <h5 class="title">Make a Bet</h5>
+                                                <% if (tables[i].status == 'full') {%>
+                                                    <h5 class="title table-back-<%= tables[i]._id %>">Finalize Bet</h5>
+                                                <%} else if(tables[i].status == 'half') {%>
+                                                    <h5 class="title table-back-<%= tables[i]._id %>">Join The Bet</h5>
+                                                <%} else {%>
+                                                    <h5 class="title table-back-<%= tables[i]._id %>">Make a Bet</h5>
+                                                <%}%>
                                             <%}%>
                                             <span class="sub-title"></span>
                                             <a data-fancybox data-src="#mh"
-                                                onclick="tableSetting(<%= tables[i]._id %>)"></a>
+                                                onclick="popup(<%= tables[i]._id %>)"></a>
                                         </figcaption>
                                     </figure>
+                                    <span id='table-data-<%= tables[i]._id %>' style="display:none"><%= JSON.stringify(tables[i]) %></span>
                                 </div>
                                 <%}%>
                             </div>
@@ -70,85 +73,146 @@
             <div class="container">
                 <div class="row mh-portfolio-modal-inner">
                     <div class="col-md-10">
-
                         <div class="price-box">
-                            <div class="form-horizontal form-pricing" role="form">
-                        
-                                <h2>Table At <span id="modalTableIndex"></span></h2>
-                                <h5>Number to Hide</h5>
-                                <div class="betOptionBox">
-                                    <div class="input-group" id="radioBtn">
-                                    <% for(let i = 0; i< options.maxCase; i++){%>
-                                        <% if (i == 0) {%>
-                                            <a class="btn btn-info" data-toggle="numberButton" data-title="<%= i%>"><%= i%></a>
-                                        <%} else {%>
-                                            <a class="btn btn-info notActive" data-toggle="numberButton" data-title="<%= i%>"><%= i%></a>
+
+                            <div class="popup-full" style="display:none">
+                                <h2>Table At <span class="modalTableIndex" id="table-full"></span></h2>
+                                <h5>Maker</h5> <a id="bet-maker-full"></a>
+                                <h5>Taker</h5> <a id="bet-taker-full"></a>
+                                <h5>Payout on Win</h5> <span id="bet-stake-full"></span> ETH
+                                <h5>Taker's Prediction</h5> 
+                                <span class="btn btn-info" id="bet-taker-number" ></span>
+                                <h5>Time Left for Maker to reveal the Number</h5> 
+                                <span class="btn btn-danger" id="bet-time-left"></span>
+                                <input type="hidden" id="timer" value=0>
+                                <h5></h5>
+                                <div class="form-horizontal form-pricing" role="form">
+                                    <h5>Maker's Real Number</h5> 
+                                    <div class="betOptionBox">
+                                        <div class="input-group" id="numSelector">
+                                        <% for(let i = 0; i< options.maxCase; i++){%>
+                                            <% if (i == 0) {%>
+                                                <a class="btn btn-info" data-toggle="numberButton-full" data-title="<%= i%>"><%= i%></a>
+                                            <%} else {%>
+                                                <a class="btn btn-info notActive" data-toggle="numberButton-full" data-title="<%= i%>"><%= i%></a>
+                                            <%}%>
                                         <%}%>
-                                    <%}%>
-                                    <input type="hidden" id="numberButton" value="0">
+                                        <input type="hidden" id="numberButton-full" value="0">
+                                        </div>
                                     </div>
-                                </div>
-                                <h5>Payout on Win</h5>
-                                <span id="amount-label"></span> ETH
-                                <div class="price-slider">
-                                    <span>Minimum 0.01 ETH is required</span>
-                                </div>
-                                <div class="price-slider">
-                                    <div class="col-sm-12">
-                                        <div id="slider"></div>
+                                    <h5>Word for Salted Hash</h5>
+                                    <div class="betOptionBox">
+                                        <input type="text" class="form-control" id="salt-word" placeholder="Type Your Word" required>
                                     </div>
-                                </div>
-                            
-                                <div class="col-sm-6">
-                                    <input type="hidden" id="amount" class="form-control">
-                                    Deposit: <span id="deposit-label"></span> ETH
-                                </div>
-                        
-                                <h5>Revealing Duration</h5>
-                                <div class=" custom-control custom-radio custom-control-inline">
-                                    <input type="radio" id="durationRadio1" name="durationRadio" value="900" checked="checked" class="custom-control-input">
-                                    <label class="custom-control-label" for="durationRadio1">15 min</label>
-                                </div>
-                                <div class=" custom-control custom-radio custom-control-inline">
-                                    <input type="radio" id="durationRadio2" name="durationRadio" value="1800" class="custom-control-input">
-                                    <label class="custom-control-label" for="durationRadio2">30 min</label>
-                                </div>
-                                <div class=" custom-control custom-radio custom-control-inline">
-                                    <input type="radio" id="durationRadio3" name="durationRadio" value="3600" class="custom-control-input">
-                                    <label class="custom-control-label" for="durationRadio3">1 hr</label>
-                                </div>
 
-                                <h5>Word for Salted Hash</h5>
-                                <div class="betOptionBox">
-                                    <input type="text" class="form-control" id="saltWord" placeholder="ex) apple" required>
-                                    <span id="hashedNum"></span>
-                                </div>
-
-                                <div class="col-sm-12 submit-button">
-                                    <button class="btn btn-primary btn-lg btn-block">Make a Bet </button>
+                                    <h5></h5>
+                                    <div class="col-sm-12 finalize-button">
+                                        <button class="btn btn-info btn-block">Reveal Number </button>
+                                    </div>
+                                    <div class="col-sm-12 unearned-button">
+                                        <button class="btn btn-warning btn-block">Acquire Unearnd Bet </button>
+                                    </div>
                                 </div>
                             </div>
+
+                            <div class="popup-half" style="display:none">
+                                <div class="form-horizontal form-pricing" role="form">
+                                    <h2>Table At <span class="modalTableIndex" id="table-half"></span></h2>
+                                    <h5>Maker</h5> <a id="bet-maker-half"></a>
+                                    <h5>Payout on Win</h5> <span id="bet-stake-half"></span> ETH
+                                    <h5>Predict the Number</h5>
+                                    <div class="betOptionBox">
+                                        <div class="input-group" id="numSelector">
+                                        <% for(let i = 0; i< options.maxCase; i++){%>
+                                            <% if (i == 0) {%>
+                                                <a class="btn btn-info" data-toggle="numberButton" data-title="<%= i%>"><%= i%></a>
+                                            <%} else {%>
+                                                <a class="btn btn-info notActive" data-toggle="numberButton" data-title="<%= i%>"><%= i%></a>
+                                            <%}%>
+                                        <%}%>
+                                        <input type="hidden" id="numberButton" value="0">
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-12 join-button">
+                                        <button class="btn btn-primary btn-lg btn-block">Join the Bet </button>
+                                    </div>
+                                    <div class="col-sm-12 cancel-button">
+                                        <button class="btn btn-danger btn-block">Cancel Bet </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="popup-pending" style="display:none">
+                                <h2>Table At <span class="modalTableIndex"></span></h2>
+                                <h5>Wait for Pending Transaction</h5> <a id="bet-recentTx"></a>
+                            </div>
+
+                            <div class="popup-empty" style="display:none">
+                                <div class="form-horizontal form-pricing" role="form">
+                            
+                                    <h2>Table At <span class="modalTableIndex" id="table-empty"></span></h2>
+                                    <h5>Number to Hide</h5>
+                                    <div class="betOptionBox">
+                                        <div class="input-group" id="numSelector">
+                                        <% for(let i = 0; i< options.maxCase; i++){%>
+                                            <% if (i == 0) {%>
+                                                <a class="btn btn-info" data-toggle="numberButton" data-title="<%= i%>"><%= i%></a>
+                                            <%} else {%>
+                                                <a class="btn btn-info notActive" data-toggle="numberButton" data-title="<%= i%>"><%= i%></a>
+                                            <%}%>
+                                        <%}%>
+                                        <input type="hidden" id="numberButton" value="0">
+                                        </div>
+                                    </div>
+                                    <h5>Payout on Win</h5>
+                                    <span id="amount-label"></span> ETH
+                                    <div class="price-slider">
+                                        <span>Minimum 0.01 ETH is required</span>
+                                    </div>
+                                    <div class="price-slider">
+                                        <div class="col-sm-12">
+                                            <div id="slider"></div>
+                                        </div>
+                                    </div>
+                                
+                                    <div class="col-sm-6">
+                                        <input type="hidden" id="amount" class="form-control">
+                                        Deposit: <span id="deposit-label"></span> ETH
+                                    </div>
+                            
+                                    <h5>Revealing Duration</h5>
+                                    <div class=" custom-control custom-radio custom-control-inline">
+                                        <input type="radio" id="durationRadio1" name="durationRadio" value="900" checked="checked" class="custom-control-input">
+                                        <label class="custom-control-label" for="durationRadio1">15 min</label>
+                                    </div>
+                                    <div class=" custom-control custom-radio custom-control-inline">
+                                        <input type="radio" id="durationRadio2" name="durationRadio" value="1800" class="custom-control-input">
+                                        <label class="custom-control-label" for="durationRadio2">30 min</label>
+                                    </div>
+                                    <div class=" custom-control custom-radio custom-control-inline">
+                                        <input type="radio" id="durationRadio3" name="durationRadio" value="3600" class="custom-control-input">
+                                        <label class="custom-control-label" for="durationRadio3">1 hr</label>
+                                    </div>
+    
+                                    <h5>Word for Salted Hash</h5>
+                                    <div class="betOptionBox">
+                                        <input type="text" class="form-control" id="saltWord" placeholder="ex) apple" required>
+                                        <span id="hashedNum"></span>
+                                    </div>
+    
+                                    <div class="col-sm-12 make-button">
+                                        <button class="btn btn-primary btn-lg btn-block">Make a Bet </button>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
-
-
-                        
                         <div class="col-sm-3 metamask-image">
                             <a href="https://metamask.io/" target="_blank">
                                 <img src="/images/metamask-logo.jpg">
                             </a>
                         </div>
-                        
-                        <!-- <h2>Maker's Txid</h2>
-                        <h2>Payout on Win</h2>
-                        <h2>Prediction</h2>
-                        <h2>Place BET</h2>
 
-                        <h2>Maker's Txid</h2>
-                        <h2>Taker's Txid</h2>
-                        <h2>Payout on Win</h2>
-                        <h2>Taker's Prediction</h2>
-                        <h2>Countdown time for Maker to reveal the Number</h2>
-                        <h2>Reveal Number</h2> <h2>Acquire Unearnd Bet</h2> -->
                     </div>
                 </div>
             </div>

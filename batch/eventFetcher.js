@@ -49,8 +49,8 @@ function nodeConnect(providerUrl) {
 
     const provider = new Web3.providers.WebsocketProvider(providerUrl);
 
-    provider.on('end', () => retry());
-    provider.on('error', () => retry());
+    provider.on('end', () => nodeConnect(providerUrl));
+    provider.on('error', () => nodeConnect(providerUrl));
 
     web3.setProvider(provider);
     logger.info('New Web3 Provider Initiated');
@@ -150,8 +150,6 @@ async function syncTable(tableData) {
 
         if (currentData) {
             currentData.status = getTableStatus(tableData[tableIndex]);
-            currentData.recentTx = '';
-            currentData.recentTime = null;
             currentData.maker = tableData[tableIndex].maker;
             currentData.deposit = tableData[tableIndex].deposit;
             currentData.hashedNum = tableData[tableIndex].hashedNum;
@@ -200,9 +198,9 @@ async function tableChanged(MyContract, event) {
 
     currentData.status = getTableStatus(tableInfo);
     currentData.recentTx = event.transactionHash;
-    if (currentData.recentTx != event.transactionHash) {
+    currentData.recentTime = Math.ceil(new Date().getTime() / 1000);
+    if (currentData.pendingTx != event.transactionHash) {
         logger.notice('Transaction Pending Missed : ' + JSON.stringify(event.transactionHash));
-        currentData.recentTime = new Date().getTime();
     }
     currentData.maker = tableInfo.maker;
     currentData.deposit = tableInfo.deposit;

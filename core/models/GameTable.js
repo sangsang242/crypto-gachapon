@@ -21,6 +21,14 @@ const gameTable = mongoose.Schema({
         type: Number,
         default: null,
     },
+    pendingTx: {
+        type: String,
+        default: '',
+    },
+    pendingTime: {
+        type: Number,
+        default: null,
+    },
     maker: {
         type: String,
         require: true,

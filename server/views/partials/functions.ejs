@@ -1,5 +1,19 @@
 <%
 toEth = function(wei) {
-  return wei / Math.pow(10, 18);
+  return wei / Math.pow(10, 18)
+}
+
+isPending = function(pending, recent) {
+  if (!pending || pending < recent) {
+    return false
+  }
+  
+  currentTime = new Date().getTime()
+  waiting = 60 * 1000
+  if (pending + waiting < currentTime) {
+    return false
+  }
+
+  return true
 }
 %>
