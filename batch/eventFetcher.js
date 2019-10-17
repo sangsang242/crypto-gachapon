@@ -32,7 +32,7 @@ function sleep(ms) {
  */
 async function ethNodeConnect(web3Obj, providerUrl, isRetry) {
     if (isRetry) {
-        logger.info('Re=Connection start..');
+        logger.info('Re-Connection start..');
         await sleep(60 * 1000);
     }
     
@@ -47,17 +47,26 @@ async function ethNodeConnect(web3Obj, providerUrl, isRetry) {
     return Promise.resolve(web3Obj);
 }
 
-function dbConnect() {
+async function dbConnect() {
     if (!process.env.DB_CONNECTION) {
         throw new Error('DB_CONNECTION env is NOT exist');
     }
-    mongoose.connect(process.env.DB_CONNECTION,
-        {
-            useUnifiedTopology: true,
-            useNewUrlParser: true
-        },
-        () =>
-            logger.info('DB Connected'));
+
+    try {
+        await mongoose.connect(process.env.DB_CONNECTION,
+            {
+                useUnifiedTopology: true,
+                useNewUrlParser: true,
+                autoReconnect: true,
+                reconnectTries: Number.MAX_VALUE, // Never stop trying to reconnect
+                reconnectInterval: 500, // Reconnect every 500ms
+            },
+            () =>
+                logger.info('DB Connected'));
+    } catch (error) {
+        logger.info(error);
+        handleError(error);
+    }
 }
 
 function getAbi(web3Obj) {

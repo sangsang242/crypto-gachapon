@@ -28,13 +28,13 @@ $(function () {
 
   function web3BuildUp() {
     return new Promise(async (resolve, reject) => {
-      if (!ethereum.isMetaMask) {
+      if (typeof(web3) === 'undefined' || !ethereum.isMetaMask) {
         status = false;
         msg = 'Please install metamask first.'
         resolve({ status, msg })
       }
 
-      if (!web3.eth.coinbase) {
+      if (typeof(web3) !== 'undefined' && !web3.eth.coinbase) {
         try {
           await ethereum.enable()
           ethereum.autoRefreshOnNetworkChange = false
@@ -44,19 +44,21 @@ $(function () {
           resolve({ status, msg })
         }
       }
-
-      web3.version.getNetwork((err, netId) => {
-        if (netId != "3") {
-          status = false;
-          msg = 'Available only in Ropsten test network.'
-          resolve({ status, msg })
-        } else {
-          status = true;
-          msg = 'Build Up Complete.'
-          const myContract = web3.eth.contract(JSON.parse(contractAbi)).at(contractAddr)
-          resolve({ status, msg, myContract })
-        }
-      })
+      
+      if (typeof(web3) !== 'undefined' && web3.eth.coinbase) {
+        web3.version.getNetwork((err, netId) => {
+          if (netId != "3") {
+            status = false;
+            msg = 'Available only in Ropsten test network.'
+            resolve({ status, msg })
+          } else {
+            status = true;
+            msg = 'Build Up Complete.'
+            const myContract = web3.eth.contract(JSON.parse(contractAbi)).at(contractAddr)
+            resolve({ status, msg, myContract })
+          }
+        })
+      }
     })
   }
 
