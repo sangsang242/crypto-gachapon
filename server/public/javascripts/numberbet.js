@@ -1,7 +1,7 @@
 $(function () {
     $(document).ready(function () {
         $("#contractLink").text(function () {
-            $("#contractLink").text(shortenAddress($(this).text()))
+            $("#contractLink").text(shortenHex($(this).text(), 16))
         })
 
         $("#slider").slider({
@@ -34,11 +34,6 @@ $(function () {
 
 })
 
-function shortenAddress(addr) {
-    var shortenedAddr = addr.substring(0, 6) + '....' + addr.substring(-4, 4)
-    return shortenedAddr
-}
-
 //changed. now with parameter
 function update(slider, val) {
     //changed. Now, directly take value from ui.value. if not set (initial, will use current value.)
@@ -66,37 +61,12 @@ function update(slider, val) {
 
 /** fancybox popup event */
 function popup(tableIndex) {
+    $("#modalTableIndex").val(tableIndex)
     $(".modalTableIndex").text(tableIndex)
     const tableData = JSON.parse($("#table-data-" + tableIndex).text())
-    popupDisplay(tableData.status)
 
-    if (tableData.status == 'full') {
-        $("#timer").val(parseInt($("#timer").val()) + 1)
-
-        $("#bet-maker-full").text(shortenHex(tableData.maker, 12))
-        .attr("href", 'https://ropsten.etherscan.io/address/' + tableData.maker)
-        .attr("target","_blank")
-        $("#bet-taker-full").text(shortenHex(tableData.taker, 12))
-        .attr("href", 'https://ropsten.etherscan.io/address/' + tableData.taker)
-        .attr("target","_blank")
-        $("#bet-stake-full").text(toEth(tableData.deposit / $("#maxCase").val()))
-        $("#bet-taker-number").text(tableData.guessedNum)
-
-        var now = Math.ceil(new Date().getTime() / 1000)
-        const finishTime = tableData.takingTime + (tableData.allowedTime)
-        if (finishTime <= now) {
-            $("#bet-time-left").text('Times Up')
-        } else {
-            var duration = finishTime - now
-            startTimer(parseInt($("#timer").val()), duration, $("#bet-time-left"));
-        }
-    } else if (tableData.status == 'half') {
-        $("#bet-maker-half").text(shortenHex(tableData.maker, 12))
-        .attr("href", 'https://ropsten.etherscan.io/address/' + tableData.maker)
-        .attr("target","_blank")
-        $("#bet-stake-half").text(toEth(tableData.deposit / $("#maxCase").val()))
-        
-    } else if (tableData.status == 'pending') {
+    if ($("#table-pending-" + tableIndex).val() == "true") {
+        popupDisplay('pending')
         // ajax
         $.ajax({
             url: '/api/gameTables/' + tableIndex,
@@ -104,21 +74,53 @@ function popup(tableIndex) {
             dataType: 'json',
             success: function (table) {
                 now = Math.ceil(new Date().getTime() / 1000)
-                waiting = 60
-                if (table.recentTime < table.pendingTime && 
-                    table.pendingTime + waiting < now) {
-                    $("#bet-recentTx").text(shortenHex(tableData.recentTx, 12))
-                    .attr("href", 'https://ropsten.etherscan.io/tx/' + tableData.recentTx)
-                    .attr("target","_blank")
+                waiting = 45
+                if (table.recentTime < table.pendingTime &&
+                    table.pendingTime + waiting > now) {
+                    // pending situation
+                    $("#bet-recentTx").text(shortenHex(table.pendingTx, 12))
+                        .attr("href", 'https://ropsten.etherscan.io/tx/' + table.pendingTx)
+                        .attr("target", "_blank")
                 } else {
-                    // 전체 화면 교체
-                    alert('Pending Transaction has been reverted.')
+                    // is not pending anymore
+                    alert('Pending Transaction assumed Reverted. If not, Please Notify us.')
+                    $("#table-data-" + table._id).text(JSON.stringify(table))
+                    changeStatusView(table.status, table._id)
                     $.fancybox.close()
                 }
             }
         })
     } else {
+        popupDisplay(tableData.status)
 
+        if (tableData.status == 'full') {
+            $("#timer").val(parseInt($("#timer").val()) + 1)
+    
+            $("#bet-maker-full").text(shortenHex(tableData.maker, 12))
+            .attr("href", 'https://ropsten.etherscan.io/address/' + tableData.maker)
+            .attr("target","_blank")
+            $("#bet-taker-full").text(shortenHex(tableData.taker, 12))
+            .attr("href", 'https://ropsten.etherscan.io/address/' + tableData.taker)
+            .attr("target","_blank")
+            $("#bet-stake-full").text(toEth(tableData.deposit / $("#maxCase").val()))
+            $("#bet-taker-number").text(tableData.guessedNum)
+    
+            var now = Math.ceil(new Date().getTime() / 1000)
+            const finishTime = tableData.takingTime + (tableData.allowedTime)
+            if (finishTime <= now) {
+                $("#bet-time-left").text('Times Up')
+            } else {
+                var duration = finishTime - now
+                startTimer(parseInt($("#timer").val()), duration, $("#bet-time-left"));
+            }
+        } else if (tableData.status == 'half') {
+            $("#bet-maker-half").text(shortenHex(tableData.maker, 12))
+            .attr("href", 'https://ropsten.etherscan.io/address/' + tableData.maker)
+            .attr("target","_blank")
+            $("#bet-stake-half").text(toEth(tableData.deposit / $("#maxCase").val()))
+        } else {
+    
+        }
     }
 
 }
@@ -139,8 +141,9 @@ function toEth(wei) {
 }
 
 function shortenHex(data, length) {
-    const halfLen = length - 2
-    var shorteneData = data.substring(0, halfLen + 2) + '....' + data.substring(-halfLen, halfLen)
+    const halfLen = (length - 2) / 2
+    const reverse = data.length - halfLen
+    var shorteneData = data.substring(0, halfLen + 2) + '....' + data.substring(reverse, data.length)
     return shorteneData
 }
 

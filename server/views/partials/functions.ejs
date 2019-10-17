@@ -8,9 +8,9 @@ isPending = function(pending, recent) {
     return false
   }
   
-  currentTime = new Date().getTime()
-  waiting = 60 * 1000
-  if (pending + waiting < currentTime) {
+  currentTime = Math.ceil(new Date().getTime() / 1000)
+  waiting = 45
+  if (pending + waiting <= currentTime) {
     return false
   }
 

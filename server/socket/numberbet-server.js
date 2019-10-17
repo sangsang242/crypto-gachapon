@@ -15,28 +15,33 @@ module.exports = function (socket) {
     }
 
     currentData.pendingTx = data.tx;
-    currentData.pendingTime = new Date().getTime();
-    console.log(data)
+    currentData.pendingTime = Math.ceil(new Date().getTime() / 1000);
+    // console.log(currentData)
     await currentData.save();
 
-    socket.emit('pendingTx', {
-      tableIndex: data.tableIndex,
-      tx: data.tx
-    });
     socket.broadcast.emit('pendingTx', {
       tableIndex: data.tableIndex,
       tx: data.tx
     });
   });
 
-  // when the client emits 'typing', we broadcast it to others
-  socket.on('fetcherConnect', () => {
-    socket.emit('fetcherConnect', {
-      msg: ' hell o '
+  socket.on('tableWebhook', (data) => {
+    console.log(data.table)
+    console.log(data.table.status)
+    if (data.table.status == 'full') {
+      console.log(1)
+    } else if (data.table.status == 'half') {
+      console.log(2)
+    } else {
+      console.log(3)
+    }
+
+    socket.broadcast.emit(data.table.status + 'Table', {
+      tableIndex: data.table._id,
+      table: JSON.stringify(data.table)
     });
   });
 
-  // when the client emits 'stop typing', we broadcast it to others
   socket.on('stop typing', () => {
     socket.broadcast.emit('stop typing', {
       username: socket.username

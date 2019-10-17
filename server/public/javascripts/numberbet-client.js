@@ -7,11 +7,6 @@ $(function () {
   var minimumAmt = 0.01
 
   $('.make-button').on('click', async () => {
-    socket.emit('pendingTx', {
-      tableIndex: 0,
-      tx: '0x06eb0df36ae2e00661768195d4c8d4ca7357f4f5801a725f32f27c1fb75c4175'
-    });
-    console.log('pendingTx Sent')
     web3BuildUp().then(result => makeBet(result))
   })
 
@@ -92,7 +87,7 @@ $(function () {
         return
       }
 
-      var tableIndex = $(".modalTableIndex#table-empty").text()
+      var tableIndex = $("#modalTableIndex").val()
       var hashedNum = getHashedNum($('#numberButton').val(), $("#saltWord").val())
       var duration = $(':radio[name="durationRadio"]:checked').val()
       var option = {
@@ -112,6 +107,7 @@ $(function () {
               tx: tx
             });
             alert('Transaction Sent successfully: ' + tx)
+            changeStatusView('pending', tableIndex)
             $.fancybox.close()
           }
         })
@@ -128,17 +124,17 @@ $(function () {
         return
       }
 
-      if (!$('#numberButton').val()) {
+      if (!$('#numberButton-half').val()) {
         alert('Please select the number.')
         return
       }
 
-      var tableIndex = $(".modalTableIndex#table-half").text()
-      var number = $('#numberButton').val()
+      var tableIndex = $("#modalTableIndex").val()
+      var number = $('#numberButton-half').val()
       var option = {
         from: web3.eth.accounts[0],
         to: contractAddr,
-        value: (Math.pow(10, 18) * ($("#bet-stake").text())),
+        value: (Math.pow(10, 18) * ($("#bet-stake-half").text())),
         data: buildUp.myContract.takeBet.getData(tableIndex, number)
       }
   
@@ -152,6 +148,7 @@ $(function () {
               tx: tx
             });
             alert('Transaction Sent successfully: ' + tx)
+            changeStatusView('pending', tableIndex)
             $.fancybox.close()
           }
         })
@@ -178,7 +175,7 @@ $(function () {
         return
       }
 
-      var tableIndex = $(".modalTableIndex#table-full").text()
+      var tableIndex = $("#modalTableIndex").val()
       var realNumber = $('#numberButton-full').val()
       var saltWord = $("#salt-word").val()
       var option = {
@@ -197,6 +194,7 @@ $(function () {
               tx: tx
             });
             alert('Transaction Sent successfully: ' + tx)
+            changeStatusView('pending', tableIndex)
             $.fancybox.close()
           }
         })
@@ -213,7 +211,7 @@ $(function () {
         return
       }
 
-      var tableIndex = $(".modalTableIndex#table-full").text()
+      var tableIndex = $("#modalTableIndex").val()
       var option = {
         from: web3.eth.accounts[0],
         to: contractAddr,
@@ -230,6 +228,7 @@ $(function () {
               tx: tx
             });
             alert('Transaction Sent successfully: ' + tx)
+            changeStatusView('pending', tableIndex)
             $.fancybox.close()
           }
         })
@@ -246,7 +245,7 @@ $(function () {
         return
       }
 
-      var tableIndex = $(".modalTableIndex#table-half").text()
+      var tableIndex = $("#modalTableIndex").val()
       var option = {
         from: web3.eth.accounts[0],
         to: contractAddr,
@@ -263,6 +262,7 @@ $(function () {
               tx: tx
             });
             alert('Transaction Sent successfully: ' + tx)
+            changeStatusView('pending', tableIndex)
             $.fancybox.close()
           }
         })
@@ -272,45 +272,64 @@ $(function () {
     })
   }
 
-
   /** socket event */
 
   socket.on('pendingTx', (data) => {
-    console.log(data)
-
-    if ($("#contractAbi").val() == data.tableIndex) {
+    if ($("#modalTableIndex").val() == data.tableIndex) {
+      alert('Pending Transaction on this Table Watched')
       $.fancybox.close()
     }
-    // pending effect
-    data.tableIndex;
-    data.tx;
+    changeStatusView('pending', data.tableIndex)
   });
 
-  socket.on('makerIsOn', (data) => {
-    if ($("#contractAbi").val() == data.tableIndex) {
+  socket.on('halfTable', (data) => {
+    if ($("#modalTableIndex").val() == data.tableIndex) {
+      alert('Transaction on this Table Confirmed')
       $.fancybox.close()
     }
-    // turn into Bet on $$
-    data.tableIndex;
-
+    changeStatusView('half', data.tableIndex)
+    $("#table-data-" + data.tableIndex).text(data.table)
   });
 
-  socket.on('takerIsOn', (data) => {
-    if ($("#contractAbi").val() == data.tableIndex) {
+  socket.on('fullTable', (data) => {
+    if ($("#modalTableIndex").val() == data.tableIndex) {
+      alert('Transaction on this Table Confirmed')
       $.fancybox.close()
     }
-    // Table is full
-    data.tableIndex;
-
+    changeStatusView('full', data.tableIndex)
+    $("#table-data-" + data.tableIndex).text(data.table)
   });
 
   socket.on('emptyTable', (data) => {
-    if ($("#contractAbi").val() == data.tableIndex) {
+    if ($("#modalTableIndex").val() == data.tableIndex) {
+      alert('Transaction on this Table Confirmed')
       $.fancybox.close()
     }
-    // pending effect
+    changeStatusView('empty', data.tableIndex)
+    $("#table-data-" + data.tableIndex).text(data.table)
   });
 
 })
 
 
+function changeStatusView(status, tableIndex) {
+  if (status == 'full') {
+    $("#table-front-" + tableIndex).text('Full Table')
+    $("#table-pending-" + tableIndex).val('false')
+    $("#table-back-" + tableIndex).text('Finalize Bet')
+  } else if (status == 'half') {
+    const tableData = JSON.parse($("#table-data-" + tableIndex).text())
+    bebPot = toEth(tableData.deposit / $("#maxCase").val())
+    $("#table-front-" + tableIndex).text('Bet on ' + bebPot + ' ETH')
+    $("#table-pending-" + tableIndex).val('false')
+    $("#table-back-" + tableIndex).text('Join The Bet')
+  } else if (status == 'empty') {
+    $("#table-front-" + tableIndex).text('Empty Table')
+    $("#table-pending-" + tableIndex).val('false')
+    $("#table-back-" + tableIndex).text('Make a Bet')
+  } else {
+    $("#table-front-" + tableIndex).text('Pending')
+    $("#table-pending-" + tableIndex).val('true')
+    $("#table-back-" + tableIndex).text('Check Txid')
+  }
+}

@@ -10,7 +10,9 @@ var jwt = require('jsonwebtoken');
 router.get('/gameTables/:tableIndex', async (req, res) => {
   try {
     const tableIndex = req.params.tableIndex;
-    const tableData = await Table.findById(tableIndex);
+    var tableData = await Table.findById(tableIndex);
+    tableData.tableIndex = tableIndex;
+    
     res.json(tableData);
   } catch (error) {
     res.json({ message: error.toString() });

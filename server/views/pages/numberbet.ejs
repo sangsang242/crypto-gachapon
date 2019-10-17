@@ -27,32 +27,32 @@
                                 <% for(let i = 0; i< tables.length; i++){%>
                                 <div class="grid-item col-md-4 col-sm-6 col-xs-12">
                                     <figure>
-                                        <span class="service-icon mx-auto table-front-<%= tables[i]._id %>">
-                                            <% if (isPending(tables[i].pendingTime, tables[i].recentTime)) {%>
-                                                Pending
+                                        <% if (isPending(tables[i].pendingTime, tables[i].recentTime)) {%>
+                                            <input type="hidden" id="table-pending-<%= tables[i]._id %>" value="true">
+                                            <span class="service-icon mx-auto" id="table-front-<%= tables[i]._id %>">Pending</span>
+                                        <%} else {%>
+                                            <input type="hidden" id="table-pending-<%= tables[i]._id %>" value="false">
+                                            <% if (tables[i].status == 'full') {%>
+                                                <span class="service-icon mx-auto" id="table-front-<%= tables[i]._id %>">Full Table</span>
+                                            <%} else if(tables[i].status == 'half') {%>
+                                                <span class="service-icon mx-auto" id="table-front-<%= tables[i]._id %>">Bet on <%= toEth(tables[i].deposit / options.maxCase) %> ETH</span>
                                             <%} else {%>
-                                                <% if (tables[i].status == 'full') {%>
-                                                    Full Table
-                                                <%} else if(tables[i].status == 'half') {%>
-                                                    Bet on <%= toEth(tables[i].deposit / options.maxCase) %> ETH
-                                                <%} else {%>
-                                                    Empty Table
-                                                <%}%>
+                                                <span class="service-icon mx-auto" id="table-front-<%= tables[i]._id %>">Empty Table</span>
                                             <%}%>
-                                        </span>
+                                        <%}%>
                                         <figcaption class="fig-caption">
                                             <div class="numberCircle">
                                                 <%= tables[i]._id %>
                                             </div>
                                             <% if (isPending(tables[i].pendingTime, tables[i].recentTime)) {%>
-                                                <h5 class="title table-back-<%= tables[i]._id %>">Check Txid</h5>
+                                                <h5 class="title" id="table-back-<%= tables[i]._id %>">Check Txid</h5>
                                             <%} else {%>
                                                 <% if (tables[i].status == 'full') {%>
-                                                    <h5 class="title table-back-<%= tables[i]._id %>">Finalize Bet</h5>
+                                                    <h5 class="title" id="table-back-<%= tables[i]._id %>">Finalize Bet</h5>
                                                 <%} else if(tables[i].status == 'half') {%>
-                                                    <h5 class="title table-back-<%= tables[i]._id %>">Join The Bet</h5>
+                                                    <h5 class="title" id="table-back-<%= tables[i]._id %>">Join The Bet</h5>
                                                 <%} else {%>
-                                                    <h5 class="title table-back-<%= tables[i]._id %>">Make a Bet</h5>
+                                                    <h5 class="title" id="table-back-<%= tables[i]._id %>">Make a Bet</h5>
                                                 <%}%>
                                             <%}%>
                                             <span class="sub-title"></span>
@@ -76,7 +76,7 @@
                         <div class="price-box">
 
                             <div class="popup-full" style="display:none">
-                                <h2>Table At <span class="modalTableIndex" id="table-full"></span></h2>
+                                <h2>Table At <span class="modalTableIndex"></span></h2>
                                 <h5>Maker</h5> <a id="bet-maker-full"></a>
                                 <h5>Taker</h5> <a id="bet-taker-full"></a>
                                 <h5>Payout on Win</h5> <span id="bet-stake-full"></span> ETH
@@ -117,7 +117,7 @@
 
                             <div class="popup-half" style="display:none">
                                 <div class="form-horizontal form-pricing" role="form">
-                                    <h2>Table At <span class="modalTableIndex" id="table-half"></span></h2>
+                                    <h2>Table At <span class="modalTableIndex"></span></h2>
                                     <h5>Maker</h5> <a id="bet-maker-half"></a>
                                     <h5>Payout on Win</h5> <span id="bet-stake-half"></span> ETH
                                     <h5>Predict the Number</h5>
@@ -125,12 +125,12 @@
                                         <div class="input-group" id="numSelector">
                                         <% for(let i = 0; i< options.maxCase; i++){%>
                                             <% if (i == 0) {%>
-                                                <a class="btn btn-info" data-toggle="numberButton" data-title="<%= i%>"><%= i%></a>
+                                                <a class="btn btn-info" data-toggle="numberButton-half" data-title="<%= i%>"><%= i%></a>
                                             <%} else {%>
-                                                <a class="btn btn-info notActive" data-toggle="numberButton" data-title="<%= i%>"><%= i%></a>
+                                                <a class="btn btn-info notActive" data-toggle="numberButton-half" data-title="<%= i%>"><%= i%></a>
                                             <%}%>
                                         <%}%>
-                                        <input type="hidden" id="numberButton" value="0">
+                                        <input type="hidden" id="numberButton-half" value="0">
                                         </div>
                                     </div>
                                     <div class="col-sm-12 join-button">
@@ -150,7 +150,7 @@
                             <div class="popup-empty" style="display:none">
                                 <div class="form-horizontal form-pricing" role="form">
                             
-                                    <h2>Table At <span class="modalTableIndex" id="table-empty"></span></h2>
+                                    <h2>Table At <span class="modalTableIndex"></span></h2>
                                     <h5>Number to Hide</h5>
                                     <div class="betOptionBox">
                                         <div class="input-group" id="numSelector">
@@ -205,6 +205,7 @@
                                     </div>
                                 </div>
                             </div>
+                            <input type="hidden" id="modalTableIndex" value="">
 
                         </div>
                         <div class="col-sm-3 metamask-image">

@@ -10,7 +10,7 @@ const Table = require('../core/models/GameTable');
 const EventLog = require('../core/models/EventLog');
 
 const socket = require('socket.io-client')(
-    process.env.SOCKET_HOST + process.env.SOCKET_PORT + '/numberbet');
+    process.env.SOCKET_HOST + ':' + process.env.SOCKET_PORT + '/numberbet');
 
 function getDate() {
     var dateObj = new Date();
@@ -21,14 +21,30 @@ function getDate() {
     return year + '' + month + '' + day;
 }
 
+function sleep(ms) {
+    return new Promise(resolve => {
+        setTimeout(resolve, ms)
+    })
+}
+
 /**
  * Refreshes provider instance and attaches even handlers to it
  */
-async function connect(providerUrl) {
-    await dbConnect();
+async function ethNodeConnect(web3Obj, providerUrl, isRetry) {
+    if (isRetry) {
+        logger.info('Re=Connection start..');
+        await sleep(60 * 1000);
+    }
+    
+    const provider = new Web3.providers.WebsocketProvider(providerUrl);
 
-    const web3 = await nodeConnect(providerUrl);
-    return Promise.resolve(web3);
+    provider.on('end', () => fetchEvent(web3Obj, providerUrl, true));
+    provider.on('error', () => fetchEvent(web3Obj, providerUrl, true));
+
+    web3Obj.setProvider(provider);
+    logger.info('New Web3 Provider Initiated');
+
+    return Promise.resolve(web3Obj);
 }
 
 function dbConnect() {
@@ -42,20 +58,6 @@ function dbConnect() {
         },
         () =>
             logger.info('DB Connected'));
-}
-
-function nodeConnect(providerUrl) {
-    var web3 = new Web3();
-
-    const provider = new Web3.providers.WebsocketProvider(providerUrl);
-
-    provider.on('end', () => nodeConnect(providerUrl));
-    provider.on('error', () => nodeConnect(providerUrl));
-
-    web3.setProvider(provider);
-    logger.info('New Web3 Provider Initiated');
-
-    return web3;
 }
 
 function getAbi(web3Obj) {
@@ -212,6 +214,11 @@ async function tableChanged(MyContract, event) {
     currentData.takingTime = tableInfo.takingTime;
     const savedData = await currentData.save();
     logger.info('Watched Event Update Result : ' + JSON.stringify(savedData));
+
+    socket.emit('tableWebhook', {
+        table: currentData
+    });
+    logger.info('Socket Emitted : table ' + tableIndex);
 }
 
 async function logEvent(eventName, event) {
@@ -261,11 +268,16 @@ function getTableStatus(table) {
     return tableStatus;
 }
 
+function fetchEvent(web3Obj, providerUrl, isRetry) {
+    dbConnect();
+    ethNodeConnect(web3Obj, providerUrl, isRetry)
+        .then(getAbi)
+        .then(getInitialData)
+        .then(subscribe)
+}
+
 logger.info('========================================');
 logger.info('Fetch Contract Start...');
 
-connect('wss://' + process.env.INFURA_ENDPOINT)
-    .then(getAbi)
-    .then(getInitialData)
-    .then(subscribe)
-
+var web3Obj = new Web3();
+fetchEvent(web3Obj, 'wss://' + process.env.INFURA_ENDPOINT, false);
