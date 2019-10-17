@@ -1,4 +1,5 @@
 var Table = require('../../core/models/GameTable');
+var telegramBot = require('../../core/lib/telegramBot');
 
 module.exports = function (socket) {
   
@@ -26,26 +27,21 @@ module.exports = function (socket) {
   });
 
   socket.on('tableWebhook', (data) => {
-    console.log(data.table)
-    console.log(data.table.status)
+    var teleMsg = ''
     if (data.table.status == 'full') {
-      console.log(1)
+      teleMsg =  'Game table ' + data.table._id + ' is full now. Please finalize bet within ' + Math.floor(data.table.allowedTime / 60) + 'minutes'
     } else if (data.table.status == 'half') {
-      console.log(2)
+      teleMsg = 'Maker is on the game table ' + data.table._id + '.'
     } else {
-      console.log(3)
+      teleMsg = 'Bet finalized on game table ' + data.table._id + ': https://ropsten.etherscan.io/tx/' + data.table.recentTx 
     }
 
     socket.broadcast.emit(data.table.status + 'Table', {
       tableIndex: data.table._id,
       table: JSON.stringify(data.table)
     });
-  });
 
-  socket.on('stop typing', () => {
-    socket.broadcast.emit('stop typing', {
-      username: socket.username
-    });
+    telegramBot.sendMessage(teleMsg);
   });
 
 };

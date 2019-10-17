@@ -12,7 +12,7 @@
     <section class="content-section img-bg text-white" id="services">
         <div class="container">
             <div class="content">
-                <h2 class="text-secondary mb-5">Number Bet (Ropsten)</h2>
+                <h2 class="text-secondary mb-5">Number Bet (Beta:Ropsten)</h2>
             </div>
             <div class="content-section-heading">
                 <h3 class="mb-3">Contract Address &ensp;<a id="contractLink" href="https://ropsten.etherscan.io/address/<%= options._id %>"
@@ -206,14 +206,16 @@
                                 </div>
                             </div>
                             <input type="hidden" id="modalTableIndex" value="">
-
+                            <div class="col-sm-12 text-center custom-image">
+                                    <a href="https://metamask.io/" target="_blank">
+                                        <img id="metamask" src="/images/metamask-logo.jpg">
+                                    </a>
+                                    <a href="https://t.me/numberbet777" target="_blank">
+                                        <img id="telegram" src="/images/telegram.jpg">
+                                        <span>Subscribe</span>
+                                    </a>
+                                </div>
                         </div>
-                        <div class="col-sm-3 metamask-image">
-                            <a href="https://metamask.io/" target="_blank">
-                                <img src="/images/metamask-logo.jpg">
-                            </a>
-                        </div>
-
                     </div>
                 </div>
             </div>
@@ -225,7 +227,6 @@
     <input type="hidden" id="contractAddr" value="<%= options._id %>">
     <input type="hidden" id="contractAbi" value="<%= abi %>">
     <input type="hidden" id="maxCase" value="<%= options.maxCase %>">
-
 
     <% include ../partials/chat %>
 

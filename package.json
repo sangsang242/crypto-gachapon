@@ -23,6 +23,7 @@
     "moment-timezone": "^0.5.26",
     "mongoose": "^5.7.3",
     "morgan": "~1.9.1",
+    "node-telegram-bot-api": "^0.30.0",
     "path": "^0.12.7",
     "pm2": "^3.5.1",
     "process": "^0.11.10",
