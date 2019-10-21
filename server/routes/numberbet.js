@@ -12,7 +12,7 @@ router.get('/', async function(req, res, next) {
 
   res.render('numberbet', {
     options: options,
-    abi: JSON.stringify(abi.toJSON().abi),
+    abi: abi ? JSON.stringify(abi.toJSON().abi) : {},
     tables: tables,
   });
 });

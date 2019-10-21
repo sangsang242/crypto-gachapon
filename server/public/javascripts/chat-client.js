@@ -21,7 +21,7 @@ $(function () {
   var typing = false;
   var lastTypingTime;
 
-  var socket = io('http://localhost:3030/chat');
+  var socket = io('/chat');
 
   /** view */
   //https://www.bypeople.com/bottom-chat-widget/`

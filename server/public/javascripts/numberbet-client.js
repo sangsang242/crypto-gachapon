@@ -1,5 +1,5 @@
 $(function () {
-  const socket = io('http://localhost:3030/numberbet');
+  const socket = io('/numberbet');
 
   const contractAddr = $("#contractAddr").val()
   const contractAbi = $("#contractAbi").val()
