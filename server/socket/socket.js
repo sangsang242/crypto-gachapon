@@ -1,4 +1,4 @@
-var io = require('socket.io')(process.env.SOCKET_PORT);
+var io = require('socket.io')();
 
 const chat = io.of('/chat');
 chat.on('connection', function(socket){

@@ -10,7 +10,7 @@ const Table = require('../core/models/GameTable');
 const EventLog = require('../core/models/EventLog');
 
 const socket = require('socket.io-client')(
-    process.env.SOCKET_HOST + ':' + process.env.SOCKET_PORT + '/numberbet');
+    process.env.SOCKET_URL + '/numberbet');
 
 function getDate() {
     var dateObj = new Date();

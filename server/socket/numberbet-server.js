@@ -44,4 +44,14 @@ module.exports = function (socket) {
     telegramBot.sendMessage(teleMsg);
   });
 
+  
+  socket.on('socketTest', (data) => {
+
+    socket.broadcast.emit('socketTest', {
+      msg: data.msg,
+    });
+
+    telegramBot.sendMessage(data.msg);
+  });
+
 };

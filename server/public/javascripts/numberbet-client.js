@@ -311,6 +311,10 @@ $(function () {
     $("#table-data-" + data.tableIndex).text(data.table)
   });
 
+  socket.on('socketTest', (data) => {
+    console.log(data)
+  });
+
 })
 
 
