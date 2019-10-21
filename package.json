@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "pm2 start ./server/ecosystem.config.js",
+    "start": "node ./server/bin/www",
     "dev": "nodemon ./server/bin/www"
   },
   "dependencies": {
