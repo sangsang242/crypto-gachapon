@@ -46,7 +46,7 @@ module.exports = function (socket) {
 
   
   socket.on('socketTest', (data) => {
-
+    console.log(data)
     socket.broadcast.emit('socketTest', {
       msg: data.msg,
     });

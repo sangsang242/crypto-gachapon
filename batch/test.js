@@ -1,16 +1,26 @@
-var crypto = require("crypto");
-var CryptoJS = require("crypto-js");
+require('dotenv').config({ path: '../.env' })
 
-var Num = 1;
-var Salt = 'apple';
+const socket = require('socket.io-client')(
+    process.env.SOCKET_URL + '/numberbet');
+    console.log(process.env.SOCKET_URL)
+    socket.emit('socketTest', {
+        msg: 'msg from local com'
+    });
+    console.log('11')
 
-// Encrypt
-var hashedNum = crypto.createHash('sha256').update(Num + Salt).digest('hex');
+    // var crypto = require("crypto");
+// var CryptoJS = require("crypto-js");
+
+// var Num = 1;
+// var Salt = 'apple';
+
+// // Encrypt
+// var hashedNum = crypto.createHash('sha256').update(Num + Salt).digest('hex');
  
-console.log(hashedNum);
+// console.log(hashedNum);
 
-var hashNum2 = CryptoJS.SHA256(Num + Salt);
-console.log(hashNum2.toString(CryptoJS.enc.Hex));
+// var hashNum2 = CryptoJS.SHA256(Num + Salt);
+// console.log(hashNum2.toString(CryptoJS.enc.Hex));
 
 // try {
 //     //Sync pending transaction
