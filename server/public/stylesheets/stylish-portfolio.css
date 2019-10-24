@@ -877,10 +877,6 @@ a:hover, a:focus, a:active {
   margin-left: -0.5em;
 }
 
-.ui-slider .ui-slider-handle {
-  cursor: pointer;
-}
-
 .ui-slider a, .ui-slider a:focus {
   cursor: pointer;
   outline: none;
@@ -999,4 +995,10 @@ hr.style {
 
 .notActive {
   background-color: #fff;
+}
+
+.fancybox-content{
+  padding: 24px;
+  padding-left: 6px;
+  padding-right: 6px;
 }
