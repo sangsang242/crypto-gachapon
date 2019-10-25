@@ -53,16 +53,25 @@ async function dbConnect() {
     }
 
     try {
-        await mongoose.connect(process.env.DB_CONNECTION,
-            {
-                useUnifiedTopology: true,
-                useNewUrlParser: true,
-                autoReconnect: true,
-                reconnectTries: Number.MAX_VALUE, // Never stop trying to reconnect
-                reconnectInterval: 500, // Reconnect every 500ms
-            },
-            () =>
-                logger.info('DB Connected'));
+        logger.info('DB Connection Status : ' + mongoose.connection.readyState)
+        if (mongoose.connection.readyState != 1) {
+            /**
+             * 0: disconnected
+               1: connected
+               2: connecting
+               3: disconnecting
+             */
+            await mongoose.connect(process.env.DB_CONNECTION,
+                {
+                    useUnifiedTopology: true,
+                    useNewUrlParser: true,
+                    autoReconnect: true,
+                    reconnectTries: Number.MAX_VALUE, // Never stop trying to reconnect
+                    reconnectInterval: 500, // Reconnect every 500ms
+                },
+                () =>
+                    logger.info('DB Connected'));
+        }
     } catch (error) {
         logger.info(error);
         handleError(error);
