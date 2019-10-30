@@ -191,9 +191,13 @@ async function syncTable(tableData) {
     }
 }
 
-function subscribe(MyContract) {
+async function subscribe(MyContract) {
     subscribeEvent(MyContract, 'OptionChanged', optionChanged);
     subscribeEvent(MyContract, 'TableChanged', tableChanged);
+
+    await sleep(120 * 60 * 1000);
+    logger.info('Scheduled Re-Connection start..');
+    fetchEvent(web3Obj, 'wss://' + process.env.INFURA_ENDPOINT, false)
 }
 
 /** Event Handler */

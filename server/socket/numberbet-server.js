@@ -33,7 +33,7 @@ module.exports = function (socket) {
     } else if (data.table.status == 'half') {
       teleMsg = 'Maker is on the game table ' + data.table._id + '.'
     } else {
-      teleMsg = 'Bet finalized on game table ' + data.table._id + ': https://ropsten.etherscan.io/tx/' + data.table.recentTx 
+      teleMsg = 'Game table ' + data.table._id + ' cleared: https://ropsten.etherscan.io/tx/' + data.table.recentTx 
     }
 
     socket.broadcast.emit(data.table.status + 'Table', {
