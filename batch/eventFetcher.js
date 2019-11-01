@@ -27,11 +27,14 @@ function sleep(ms) {
     })
 }
 
+var retryStatus = false;
+
 /**
  * Refreshes provider instance and attaches even handlers to it
  */
 async function ethNodeConnect(web3Obj, providerUrl, isRetry) {
     if (isRetry) {
+        retryStatus = true;
         logger.info('Re-Connection start..');
         await sleep(60 * 1000);
     }
@@ -195,9 +198,13 @@ async function subscribe(MyContract) {
     subscribeEvent(MyContract, 'OptionChanged', optionChanged);
     subscribeEvent(MyContract, 'TableChanged', tableChanged);
 
-    await sleep(120 * 60 * 1000);
-    logger.info('Scheduled Re-Connection start..');
-    fetchEvent(web3Obj, 'wss://' + process.env.INFURA_ENDPOINT, false)
+    await sleep(60 * 60 * 1000);
+    if (!retryStatus) {
+        logger.info('Scheduled Re-Connection start..');
+        fetchEvent(web3Obj, 'wss://' + process.env.INFURA_ENDPOINT, false)
+    } else {
+        retryStatus = false;
+    }
 }
 
 /** Event Handler */
